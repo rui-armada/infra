@@ -15,7 +15,7 @@ terraform {
 provider "kind" {}
 
 locals {
-  config = yamldecode(file("${path.module}/clusters.yaml"))
+  config = yamldecode(file("${path.module}/../clusters.yaml"))
 
   # Flatten teams × environments into a map of clusters
   # Key format: "<team>-<env>" (e.g. "myapp-prod")
