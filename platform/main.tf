@@ -8,14 +8,23 @@ terraform {
       source  = "hashicorp/null"
       version = "~> 3.0"
     }
+    external = {
+      source  = "hashicorp/external"
+      version = "~> 2.0"
+    }
   }
   required_version = ">= 1.0"
 }
 
 provider "kind" {}
 
+data "external" "git_origin" {
+  program = ["bash", "-c", "echo \"{\\\"url\\\": \\\"$(git -C ${path.module} remote get-url origin)\\\"}\""] 
+}
+
 locals {
-  config = yamldecode(file("${path.module}/../clusters.yaml"))
+  platform_repo = data.external.git_origin.result.url
+  config        = yamldecode(file("${path.module}/../clusters.yaml"))
 
   # Flatten teams × environments into a map of clusters
   # Key format: "<team>-<env>" (e.g. "myapp-prod")
@@ -51,7 +60,7 @@ module "cluster" {
   host_port_argocd = local.cluster_ports[each.key].host_port_argocd
 
   # Platform infra apps (istio, prometheus, cert-manager)
-  platform_repo    = local.config.platform_repo
+  platform_repo    = local.platform_repo
   platform_path    = "platform/apps"
 
   # Team application
