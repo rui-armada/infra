@@ -18,7 +18,7 @@ locals {
   config = yamldecode(file("${path.module}/clusters.yaml"))
 
   # Flatten teams × environments into a map of clusters
-  # Key format: "<team>-<env>" (e.g. "bestversion-prod")
+  # Key format: "<team>-<env>" (e.g. "myapp-prod")
   clusters = { for entry in flatten([
     for team in local.config.teams : [
       for env in team.environments : {

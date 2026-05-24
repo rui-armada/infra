@@ -89,7 +89,7 @@ terraform apply
 # User: admin
 # Password:
 kubectl get secret argocd-initial-admin-secret -n argocd \
-  --context kind-bestversion-prod \
+  --context kind-<team>-<env> \
   -o jsonpath='{.data.password}' | base64 -d
 ```
 
@@ -101,9 +101,9 @@ Para adicionar teams ou ambientes, edita `platform/clusters.yaml` e faz `terrafo
 platform_repo: https://github.com/rui-armada/infra.git
 
 teams:
-  - name: bestversion
-    repo: https://github.com/rui-armada/bestversion.git
-    chart_path: charts/bestversion
+  - name: my-app
+    repo: https://github.com/org/my-app.git
+    chart_path: charts/my-app
     branch: main
     environments:
       - name: prod
@@ -158,7 +158,7 @@ Todos os tools são instalados automaticamente via ArgoCD App of Apps:
 |---------|-----|-------------|
 | ArgoCD | http://localhost:8080 | admin / `kubectl get secret ...` |
 | Grafana | http://localhost:30090 | admin / admin |
-| App (bestversion) | http://localhost:3000 | — |
+| App (1º team) | http://localhost:3000 | — |
 
 ## Team Onboarding
 
@@ -190,7 +190,7 @@ my-team-repo/
 ### Destruir um cluster específico
 
 ```bash
-terraform destroy -target='module.cluster["bestversion-prod"]'
+terraform destroy -target='module.cluster["<team>-<env>"]'
 ```
 
 ### Destruir tudo
@@ -208,15 +208,15 @@ terraform output clusters
 ### Re-sync ArgoCD manualmente
 
 ```bash
-kubectl get applications -n argocd --context kind-bestversion-prod
-argocd app sync platform --context kind-bestversion-prod
+kubectl get applications -n argocd --context kind-<team>-<env>
+argocd app sync platform --context kind-<team>-<env>
 ```
 
 ### Aceder a pods/serviços
 
 ```bash
-kubectl get pods -A --context kind-bestversion-prod
-kubectl get svc -n monitoring --context kind-bestversion-prod
+kubectl get pods -A --context kind-<team>-<env>
+kubectl get svc -n monitoring --context kind-<team>-<env>
 ```
 
 ## CI/CD Pipeline (Team Apps)
