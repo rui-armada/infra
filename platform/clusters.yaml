@@ -7,8 +7,6 @@ repo_url: https://github.com/rui-armada/infra.git
 teams:
   - name: bestversion
     environments:
-      - name: dev
-      - name: staging
       - name: prod
 
   # Example: add another team
