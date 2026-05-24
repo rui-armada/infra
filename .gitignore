@@ -5,5 +5,8 @@
 *.tfplan
 .terraform.lock.hcl
 
+# cluster configs (contain certs/keys)
+*-config
+
 # misc
 .DS_Store
