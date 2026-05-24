@@ -19,7 +19,13 @@ terraform {
 provider "kind" {}
 
 data "external" "git_origin" {
-  program = ["bash", "-c", "echo \"{\\\"url\\\": \\\"$(git -C ${path.module} remote get-url origin)\\\"}\""] 
+  program = ["bash", "-c", <<-EOF
+    URL=$(git -C ${path.module} remote get-url origin)
+    # Convert SSH URL to HTTPS if needed
+    URL=$(echo "$URL" | sed -E 's|^git@github.com:|https://github.com/|')
+    echo "{\"url\": \"$URL\"}"
+  EOF
+  ]
 }
 
 locals {

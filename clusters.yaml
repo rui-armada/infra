@@ -2,15 +2,13 @@
 # Each team defines their clusters, repo, and chart path here.
 # Add/remove entries and run `terraform apply` to reconcile.
 
-teams: []
-
-  # Example: add a team
-  # - name: bestversion
-  #   repo: https://github.com/rui-armada/bestversion.git
-  #   chart_path: charts/bestversion
-  #   branch: main
-  #   environments:
-  #     - name: prod
+teams:
+  - name: bestversion
+    repo: https://github.com/rui-armada/bestversion.git
+    chart_path: charts/bestversion
+    branch: main
+    environments:
+      - name: prod
 
   # - name: payments
   #   repo: https://github.com/rui-armada/payments.git
