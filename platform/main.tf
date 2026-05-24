@@ -18,13 +18,16 @@ locals {
   config = yamldecode(file("${path.module}/clusters.yaml"))
 
   # Flatten teams × environments into a map of clusters
-  # Key format: "<team>-<env>" (e.g. "bestversion-dev")
+  # Key format: "<team>-<env>" (e.g. "bestversion-prod")
   clusters = { for entry in flatten([
     for team in local.config.teams : [
       for env in team.environments : {
-        key  = "${team.name}-${env.name}"
-        team = team.name
-        env  = env.name
+        key        = "${team.name}-${env.name}"
+        team       = team.name
+        env        = env.name
+        repo       = team.repo
+        chart_path = team.chart_path
+        branch     = team.branch
       }
     ]
   ]) : entry.key => entry }
@@ -46,9 +49,16 @@ module "cluster" {
   cluster_name     = each.key
   host_port_http   = local.cluster_ports[each.key].host_port_http
   host_port_argocd = local.cluster_ports[each.key].host_port_argocd
-  repo_url         = local.config.repo_url
-  repo_path        = "platform/apps"
-  target_revision  = "main"
+
+  # Platform infra apps (istio, prometheus, cert-manager)
+  platform_repo    = local.config.platform_repo
+  platform_path    = "platform/apps"
+
+  # Team application
+  app_name         = each.value.team
+  app_repo         = each.value.repo
+  app_chart_path   = each.value.chart_path
+  app_branch       = each.value.branch
 }
 
 output "clusters" {

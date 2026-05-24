@@ -25,19 +25,34 @@ variable "host_port_argocd" {
   default     = 8080
 }
 
-variable "repo_url" {
-  description = "Git repository URL for the App of Apps"
+variable "platform_repo" {
+  description = "Git repository URL for the platform App of Apps (infra tools)"
   type        = string
 }
 
-variable "repo_path" {
-  description = "Path in the repo containing ArgoCD Application manifests"
+variable "platform_path" {
+  description = "Path in the platform repo containing ArgoCD Application manifests"
   type        = string
   default     = "platform/apps"
 }
 
-variable "target_revision" {
-  description = "Git branch/tag to track"
+variable "app_name" {
+  description = "Name of the team application"
+  type        = string
+}
+
+variable "app_repo" {
+  description = "Git repository URL for the team's application"
+  type        = string
+}
+
+variable "app_chart_path" {
+  description = "Path to the Helm chart in the team's repo"
+  type        = string
+}
+
+variable "app_branch" {
+  description = "Git branch to track for the team's app"
   type        = string
   default     = "main"
 }
@@ -88,7 +103,7 @@ resource "null_resource" "argocd" {
   depends_on = [kind_cluster.this]
 }
 
-# --- App of Apps (bootstraps all platform components) ---
+# --- App of Apps (bootstraps platform infra: istio, prometheus, cert-manager) ---
 
 resource "null_resource" "app_of_apps" {
   provisioner "local-exec" {
@@ -102,12 +117,45 @@ resource "null_resource" "app_of_apps" {
       spec:
         project: default
         source:
-          repoURL: ${var.repo_url}
-          targetRevision: ${var.target_revision}
-          path: ${var.repo_path}
+          repoURL: ${var.platform_repo}
+          targetRevision: main
+          path: ${var.platform_path}
         destination:
           server: https://kubernetes.default.svc
           namespace: argocd
+        syncPolicy:
+          automated:
+            prune: true
+            selfHeal: true
+          syncOptions:
+            - CreateNamespace=true
+      EOF
+    EOT
+  }
+
+  depends_on = [null_resource.argocd]
+}
+
+# --- Team Application (deploys from team's repo Helm chart) ---
+
+resource "null_resource" "team_app" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      kubectl apply --context kind-${var.cluster_name} -f - <<EOF
+      apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: ${var.app_name}
+        namespace: argocd
+      spec:
+        project: default
+        source:
+          repoURL: ${var.app_repo}
+          targetRevision: ${var.app_branch}
+          path: ${var.app_chart_path}
+        destination:
+          server: https://kubernetes.default.svc
+          namespace: ${var.app_name}
         syncPolicy:
           automated:
             prune: true
