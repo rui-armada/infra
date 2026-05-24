@@ -1,0 +1,9 @@
+# terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+.terraform.lock.hcl
+
+# misc
+.DS_Store
