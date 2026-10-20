@@ -41,8 +41,8 @@ Repositório de **Platform Engineering** que provisiona clusters Kubernetes loca
 
 ```
 infra/
+├── clusters.yaml              # Configuração declarativa de clusters e teams
 ├── platform/
-│   ├── clusters.yaml          # Configuração declarativa de clusters e teams
 │   ├── main.tf                # Terraform root module
 │   └── apps/                  # ArgoCD Application manifests (App of Apps)
 │       ├── cert-manager.yaml
@@ -95,11 +95,11 @@ kubectl get secret argocd-initial-admin-secret -n argocd \
 
 ## Configuração: clusters.yaml
 
-Para adicionar teams ou ambientes, edita `platform/clusters.yaml` e faz `terraform apply`:
+Para adicionar teams ou ambientes, edita `clusters.yaml` (na raiz do repositório) e faz `terraform apply`:
+
+> O URL do repositório da plataforma é detetado automaticamente a partir do `git remote origin` (ver `data.external.git_origin` em `platform/main.tf`) — não precisas de o definir no YAML.
 
 ```yaml
-platform_repo: https://github.com/rui-armada/infra.git
-
 teams:
   - name: my-app
     repo: https://github.com/org/my-app.git
